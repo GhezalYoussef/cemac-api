@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,7 +25,7 @@ public class Catenaire {
     private FamilleCatenaire familleCatenaire;
 
     @ManyToMany(mappedBy = "catenaires")
-    private Set<Periodicite> periodicites =  new HashSet<>();
+    private List<Periodicite> periodicites;
 
     private String libelle;
 

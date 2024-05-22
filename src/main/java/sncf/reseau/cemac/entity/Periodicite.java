@@ -7,8 +7,7 @@ import sncf.reseau.cemac.enumeration.ELigne;
 import sncf.reseau.cemac.enumeration.ETension;
 import sncf.reseau.cemac.enumeration.EUnit;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,7 +28,7 @@ public class Periodicite {
             joinColumns = @JoinColumn(name = "periodicite_id"),
             inverseJoinColumns = @JoinColumn(name = "catenaire_id")
     )
-    private Set<Catenaire> catenaires = new HashSet<>();
+    private List<Catenaire> catenaires;
 
     @Column(name = "categorie_operation")
     private String categorieOperation;

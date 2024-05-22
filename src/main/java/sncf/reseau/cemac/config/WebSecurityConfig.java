@@ -15,13 +15,15 @@ public class WebSecurityConfig extends WebSecurityConfigOidc {
       
       return
             // [JRAF] Config OIDC
-            super.jrafSpringSecurityBaseConfig(http)
-               .authorizeExchange(exchange -> exchange
-                  // [JRAF] URIs OIDC/OAuth2 -> permitAll()
-                  .pathMatchers(WebSecurityConfigOidc.JRAF_PATH_MATCHERS).permitAll()
-                  .pathMatchers("/actuator/**").permitAll()
-                  // URIs de l'application à sécuriser
-                  .anyExchange().authenticated())
-               .build();
+              super.jrafSpringSecurityBaseConfig(http)
+                      .authorizeExchange(exchange -> exchange
+                              // [JRAF] URIs OIDC/OAuth2 -> permitAll()
+                              .pathMatchers(WebSecurityConfigOidc.JRAF_PATH_MATCHERS).permitAll()
+                              .pathMatchers(new String[]{"/swagger-ui/**", "/v1/api-docs/**"}).permitAll()
+                              .pathMatchers("/**").permitAll()
+                              // URIs de l'application à sécuriser
+                              .anyExchange().authenticated())
+
+                      .build();
    }
 }
