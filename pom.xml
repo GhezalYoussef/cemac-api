@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>sncf.reseau.cemac</groupId>
+   <artifactId>cemac-api</artifactId>
+   <version>1.0.0-SNAPSHOT</version>
+   <packaging>jar</packaging>
+
+   <name>API CEMAC</name>
+   <description>API</description>
+
+   <parent>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-parent</artifactId>
+      <version>3.1.4</version>
+      <relativePath />
+      <!-- lookup parent from repository -->
+   </parent>
+
+   <properties>
+      <!-- Encoding -->
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+
+      <!-- Java -->
+      <java.version>17</java.version>
+
+      <!-- Spring Cloud -->
+      <spring-cloud.version>2022.0.3</spring-cloud.version>
+
+      <!-- Surcharge version de Spring Boot Dependencies -->
+      <snakeyaml.version>2.2</snakeyaml.version>
+
+      <!-- JRAF -->
+      <jraf.version>8.0.0</jraf.version>
+
+      <!-- POI -->
+      <poi.version>5.2.3</poi.version>
+
+      <!-- logstash -->
+      <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+
+      <!-- Spring Doc - Swagger OpenAPI 3 -->
+      <springdoc-openapi-webflux-ui.version>1.6.13</springdoc-openapi-webflux-ui.version>
+
+      <!-- postgre -->
+      <postgre-version>42.6.1</postgre-version>
+
+      <scmRepositoryUri></scmRepositoryUri> <!-- A renseigner -->
+   </properties>
+
+   <scm>
+      <url>${scmRepositoryUri}</url>
+      <connection>scm:git:${scmRepositoryUri}</connection>
+      <developerConnection>scm:git:${scmRepositoryUri}</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
+
+   <dependencies>
+
+      <!-- Spring Cloud Gateway -->
+      <dependency>
+         <groupId>org.springframework.cloud</groupId>
+         <artifactId>spring-cloud-starter-gateway</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework.security</groupId>
+         <artifactId>spring-security-oauth2-jose</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-jpa</artifactId>
+      </dependency>
+
+      <!-- Lombok -->
+      <dependency>
+         <groupId>org.projectlombok</groupId>
+         <artifactId>lombok</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.postgresql</groupId>
+         <artifactId>postgresql</artifactId>
+         <version>${postgre-version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.poi</groupId>
+         <artifactId>poi</artifactId>
+         <version>${poi.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.poi</groupId>
+         <artifactId>poi-ooxml</artifactId>
+         <version>${poi.version}</version>
+      </dependency>
+
+      <!-- Spring Doc - OpenAPI 3.0 / Swagger UI -->
+      <dependency>
+         <groupId>org.springdoc</groupId>
+         <artifactId>springdoc-openapi-webflux-ui</artifactId>
+         <version>${springdoc-openapi-webflux-ui.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-actuator</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>org.yaml</groupId>
+               <artifactId>snakeyaml</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
+         <groupId>org.yaml</groupId>
+         <artifactId>snakeyaml</artifactId>
+      </dependency>
+      
+      <!-- JRAF -->
+      <dependency>
+         <groupId>com.sncf.reseau.jraf</groupId>
+         <artifactId>jraf-web-service</artifactId>
+         <version>${jraf.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>com.sncf.reseau.jraf</groupId>
+         <artifactId>jraf-cloud</artifactId>
+         <version>${jraf.version}</version>
+      </dependency>
+
+      <!-- Test -->
+      <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-test</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <!-- Format des logs en JSON (pour gérer le multiligne dans Datadog) -->
+      <dependency>
+         <groupId>net.logstash.logback</groupId>
+         <artifactId>logstash-logback-encoder</artifactId>
+         <version>${logstash-logback-encoder.version}</version>
+      </dependency>
+
+   </dependencies>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>${spring-cloud.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>repackage</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+                  <configuration>
+                     <appendAssemblyId>false</appendAssemblyId>
+                     <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                     </descriptors>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+</project>
