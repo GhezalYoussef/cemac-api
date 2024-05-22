@@ -14,7 +14,7 @@ public class WebSecurityConfig extends WebSecurityConfigOidc {
    public SecurityWebFilterChain appSpringSecurityFilterChain(ServerHttpSecurity http) {
       
       return
-            // [JRAF] Config OIDC
+              // [JRAF] Config OIDC
               super.jrafSpringSecurityBaseConfig(http)
                       .authorizeExchange(exchange -> exchange
                               // [JRAF] URIs OIDC/OAuth2 -> permitAll()

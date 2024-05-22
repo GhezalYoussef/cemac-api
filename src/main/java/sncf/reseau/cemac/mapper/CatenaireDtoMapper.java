@@ -11,15 +11,12 @@ import java.util.List;
 @Component
 public class CatenaireDtoMapper {
 
-    @Autowired
-    PeriodiciteDtoMapper periodiciteDtoMapper;
 
     public CatenaireDto map(Catenaire catenaire){
 
         return CatenaireDto.builder()
                 .id(catenaire.getId())
                 .familleCatenaire(catenaire.getFamilleCatenaire().getId())
-                .periodicites(periodiciteDtoMapper.map(catenaire.getPeriodicites()))
                 .libelle(catenaire.getLibelle())
                 .build();
     }
