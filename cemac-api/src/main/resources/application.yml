@@ -1,0 +1,87 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cemac-api
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cemacDB
+    username: cemac
+    password: cemac
+  #  flyway:
+  #    enabled: true
+  #    table: flyway_schema_history
+  #    validateOnMigrate: false
+  #    baselineOnMigrate: true
+  #    baselineVersion: 1
+  #    locations: classpath:db/migration
+  #    url: "${PGSQL_BDD_URL}"
+  #    user: "${PGSQL_BDD_USERNAME}"
+  #    password: "${PGSQL_BDD_PASSWORD}"
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  security:
+    oauth2:
+      client:
+        registration:
+          saa:
+            clientId: PSSSurveilNG
+            clientSecret: kIC1iOQoXi0u81RTS7Zp
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:4200/autologin
+            scope: openid, profile, roles
+        provider:
+          saa:
+            authorization-uri: https://idp-dev.sncf.fr:443/openam/oauth2/IDP/authorize
+            token-uri: https://idp-dev.sncf.fr:443/openam/oauth2/IDP/access_token
+            user-info-uri: https://idp-dev.sncf.fr:443/openam/oauth2/IDP/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: https://idp-dev.sncf.fr:443/openam/oauth2/IDP/connect/jwk_uri
+
+# [JRAF] activation de 1 ou plusieurs fédérations d'identité
+identity.providers.enabled: saa
+
+# [Service technique JRAF] Configuration des propriétés à exposer au frontend
+jraf.config.frontend.properties: identity.providers.enabled
+
+# OpenAPI 3.0 / Swagger UI (activation/désactivation)
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/
+  api-docs:
+    enabled: true
+    path: /v1/api-docs
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+
+
+# Config Spring Boot Actuator
+management:
+  endpoints.web.exposure.include: health, info
+  info.env.enabled: true
+  security.enabled: false
+
+# Config du enpoint /info de Spring Boot Actuator
+info:
+  app:
+    name: cemac-api
+    description: cemac api
+    version: 1.0.0
+
+# Authorization
+authorizations.file.path: /authorizations.yml
+
+# LOGO IMAGE
+logo:
+  img:
+    path: img/SNCF_LOGO.png
+

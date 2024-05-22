@@ -1,0 +1,266 @@
+#!/usr/bin/env groovy
+
+// Version du template Maven : 2.0.6
+// Documentation : https://docs.apps.eul.sncf.fr/construire/templates/maven/
+
+// Déclaration de la shared library build_libs
+@Library('build_libs') _
+
+// Options du build
+Map options = [
+    // Nombre de builds à conserver dans l'historique des builds du job Jenkins
+    NUM_TO_KEEP: 10,
+    // Version de l'image maven utilisée pour le build
+    MAVEN_VERSION: '3.9.6-eclipse-temurin-21',
+    // Définir à true si une image Docker applicative est à produire
+    DOCKER_BUILD: false,
+    // Définir à true pour des logs du build Docker plus détaillés
+    IMAGE_BUILD_VERBOSE: false,
+]
+
+// Valorisation des options par défaut
+options = defaultBuildOptions(options)
+
+// Propriétés du job
+properties([
+    // Connexion GitLab
+    gitLabConnection("${options['GITLAB_NAME']}"),
+    // Conservation des N dernières exécutions
+    buildDiscarder(logRotator(numToKeepStr: "${options['NUM_TO_KEEP']}")),
+    // Paramètres du build de release. Les valeurs du build précédent sont prises comme valeurs par défaut
+    parameters([
+        string(name: 'BRANCH_RELEASE', defaultValue: "${params['BRANCH_RELEASE']}", description: 'nom de la branche à releaser', trim: true),
+        string(name: 'RELEASE_VERSION', defaultValue: "${params['RELEASE_VERSION']}", description: 'version de la release à construire (format : X.Y.Z)', trim: true),
+        string(name: 'DEVELOPMENT_VERSION', defaultValue: "${params['DEVELOPMENT_VERSION']}", description: 'prochaine version de développement (format : X.Y.Z-SNAPSHOT)', trim: true),
+        choice(name: 'REPO_DEPLOY_RELEASE', choices: ['prod', 'dev'], description: 'répertoire de destination des artefacts de release sur Artifactory (dev ou prod)'),
+    ]),
+])
+
+// Tous les paramètres du build de release doivent être renseignés
+params.each { param ->
+    if (!param.value) {
+        error "❌ Le paramètre ${param.key} doit être renseigné"
+    }
+}
+
+// Cible 'dev' ou 'prod' de la release, qui détermine le dépôt Artifactory de publication
+String targetRepositoryType = params.REPO_DEPLOY_RELEASE
+Boolean targetingProd = targetRepositoryType == 'prod'
+Boolean dockerEnabled = options['DOCKER_BUILD'] == true
+
+// Le nom du build prend le nom de la version à livrer
+currentBuild.displayName = "${RELEASE_VERSION} - ${targetRepositoryType}"
+
+// Sinon, s'il est activé, l'horodatage des logs du CLI eul est décalé d'une heure
+env.TZ = 'Europe/Paris'
+
+// Horodatage des lignes de log Jenkins
+timestamps {
+    ansiColor('xterm') {
+        withTools([
+            [name: 'maven', version: "${options['MAVEN_VERSION']}"],
+            dockerEnabled ? [name: 'buildkit', image: 'moby/buildkit', version: 'rootless'] : [:],
+        ]) {
+            try {
+                stage('Checkout') {
+                    println '🔰 Récupération du code source'
+                    scmInfo = checkout scm
+                    env.GIT_URL = scmInfo.GIT_URL
+                    env.GIT_SHORT_URL = "${env.GIT_URL}".replace('https://', '')
+                    env.GIT_COMMIT = scmInfo.GIT_COMMIT
+                    println '✔️️ Récupération du code source effectuée'
+                }
+                stage('Setup') {
+                    container('maven') {
+                        println '🔰 Configuration du build'
+                        // Vérification de l'unicité du tag quand la cible de publication est le dépôt de production
+                        if (RELEASE_VERSION == sh(script: 'git tag -l $RELEASE_VERSION', returnStdout: true).trim()) {
+                            if (targetingProd) {
+                                error "❌ Le tag ${RELEASE_VERSION} existe déjà"
+                            }
+                            env.TAG_ALREADY_EXISTS = true
+                            println "📜 Le tag $RELEASE_VERSION existe. Il sera remplacé en fin de release"
+                        } else {
+                            env.TAG_ALREADY_EXISTS = false
+                            println "📜 Le tag $RELEASE_VERSION n'existe pas. Il sera posé en fin de release"
+                        }
+                        sh 'git config --global user.email pic-eul@sncf.com'
+                        sh 'git config --global user.name "PIC e.UL"'
+                        if (env.TAG_ALREADY_EXISTS?.toBoolean()) {
+                            // Suppression du tag existant
+                            sh 'git tag -d $RELEASE_VERSION'
+                        }
+                        // Change la version des POMs en version de release (i.e sans -SNAPSHOT)
+                        println '🔰 Mise à jour de la version'
+                        sh 'eul mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules -DgenerateBackupPoms=false'
+                        // commit les POMs modifiés et taggue la release (utilisation de git pathspec)
+                        sh '''
+                            git add :/*pom.xml
+                            git commit -m "release $RELEASE_VERSION"
+                            git tag $RELEASE_VERSION
+                        '''
+                        println '✔️️ Configuration du build effectuée'
+                    }
+                }
+                stage('Build') {
+                    container('maven') {
+                        println '🔰 Build'
+                        sh 'eul mvn compile -Dmaven.test.skip'
+                        println '✔️ Build effectué'
+                    }
+                }
+                stage('Tests') {
+                    container('maven') {
+                        println '🔰 Exécution des tests unitaires'
+                        if (sh(script: 'eul mvn org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report', returnStatus: true)) {
+                            error '❌ Release annulée. Les tests unitaires ont échoué'
+                        }
+                        println '✔️ Exécution des tests unitaires effectuée'
+                    }
+                }
+                stage('Quality gate') {
+                    container('maven') {
+                        println '🔰 Analyse qualité avec barrière qualité'
+                        withSonarQubeEnv('sonarqube') {
+                            sh """\
+                                eul mvn sonar:sonar \
+                                    -DskipTests=true \
+                                    -Dsonar.projectKey=${options['PROJECT_SONAR_KEY']} \
+                                    -Dsonar.projectVersion=\${RELEASE_VERSION} \
+                                    -Dsonar.links.ci=${JOB_URL} \
+                                    -Dsonar.links.homepage=${GIT_URL}
+                            """
+                        }
+                        // Contrôle du passage de la barrière qualité
+                        timeout(time: 1, unit: 'HOURS') {
+                            if (waitForQualityGate()?.status != 'OK') {
+                                error "❌ Release annulée. Le projet n'a pas passé la barrière qualité"
+                            }
+                        }
+                        println '✔️ Analyse qualité effectuée. Le projet a passé la barrière qualité'
+                    }
+                }
+                stage('Local CVE scan') {
+                    container('maven') {
+                        println '🔰 Scan de sécurité local sur les artefacts produits'
+                        // Scan CVE déclenché au plus tôt pour ne pas publier d'artefact avec vulnérabilités critiques
+                        if (sh(script: 'eul artefacts cve-scan --local --critical --mvn', returnStatus: true)) {
+                            // La présence de CVE critiques dans les artefacts est bloquante
+                            error "❌ Release annulée. Le scan de CVE a identifié des vulnérabilités critiques dans l'artefact ou ses dépendances"
+                        }
+                        println '✔️️ Scan CVE local effectué'
+                    }
+                }
+                stage('Release') {
+                    container('maven') {
+                        println '🔰 Publication des artefacts'
+                        // Publication des artefacts dans Artifactory
+                        // Prise en compte du paramètre du job par le CLI afin de pousser les binaires de release sur le dépôt maven_${ARESIS}_dev ou maven_${ARESIS}_prod
+                        sh "eul --repo-target ${targetRepositoryType} mvn install -DskipTests=true"
+                        // Publication des informations de build dans Artifactory
+                        sh 'eul artefacts build-publish'
+                        // Publication Jenkins du lien sur le build Artifactory
+                        publishArtifactoryBuildLink()
+                        println '✔️ Publication des artefacts effectuée'
+                        // Mise à jour de la version de développement
+                        sh 'eul mvn versions:set -DnewVersion=$DEVELOPMENT_VERSION -DprocessAllModules -DgenerateBackupPoms=false'
+                        println "🔰 Push des modifications avec publication du tag ${RELEASE_VERSION}"
+                        // ⚠️ Dans le cas d'une release sur le dépôt de dev (non immutable), si le tag existe déjà alors il est déplacé,
+                        // il faut dans ce cas utiliser l'option -f sur le push du tag
+                        env.GIT_PUSH_TAG_OPTS = env.TAG_ALREADY_EXISTS?.toBoolean() ? '-f' : ''
+                        // Commit les POMs modifiés
+                        sh '''
+                            git add :/*pom.xml
+                            git commit -m "prepare the next snapshot version : $DEVELOPMENT_VERSION"
+                            git push https://${gitlab_user}:${gitlab_pass}@$GIT_SHORT_URL $BRANCH_RELEASE
+                            git push ${GIT_PUSH_TAG_OPTS} https://${gitlab_user}:${gitlab_pass}@$GIT_SHORT_URL refs/tags/$RELEASE_VERSION
+                        '''
+                    }
+                    println "✔️️ Release de ${RELEASE_VERSION} effectuée"
+                }
+                stage('CVE scan') {
+                    container('maven') {
+                        println '🔰 Scan de sécurité distant sur les artefacts produits sur Artifactory'
+                        // Par défaut, le scan de build est synchrone pour le pipeline de release. Le résultat final du scan sera attendu par le pipeline.
+                        // Pour forcer le pipeline à ne pas attendre le résultat du scan de build, il faut enlever le flag `--wait-for-result` à la commande de scan cve.
+                        // cf: https://docs.apps.eul.sncf.fr/share/securise-scan-dependances
+                         if (sh(script: 'eul artefacts cve-scan --wait-for-result', returnStatus: true)) {
+                            // Si le pipeline arrive à ce stage cela veut dire qu'il a passé le scan local et ne présente pas de CVE critiques mais hautes.
+                            // Pour mettre la pipeline en erreur, remplacer unstable "⚠️..." par error "❌..." dans la ligne suivante
+                            unstable "⚠️️ Le scan de CVE a identifié des vulnérabilités hautes dans l'artefact ou ses dépendances"
+                        }
+                        println '✔️ Scan CVE distant effectué'
+                    }
+                }
+                stage('Docker build') {
+                    when(dockerEnabled) {
+                        println '🔰 build Docker avec Buildkit'
+                        String dockerVerboseOption = options['IMAGE_BUILD_VERBOSE'] ? '--debug' : ''
+                        env.IMAGE_NAME = options['PROJECT_NAME']
+                        env.IMAGE_VERSION = "${RELEASE_VERSION}"
+                        container('buildkit') {
+                            result = sh(script: "eul --repo-target ${targetRepositoryType} image $dockerVerboseOption build docker --tag=$IMAGE_NAME:$IMAGE_VERSION --build-arg 'VERSION=$IMAGE_VERSION'", returnStatus: true)
+                            if (result != 0) {
+                                error '❌ Le build Docker avec BuildKit a échoué'
+                            }
+                        }
+                        println '✔️ build Docker effectué'
+                    }
+                }
+
+                stage('Docker CVE scan') {
+                    when(dockerEnabled) {
+                        container('buildkit') {
+                            println '🔰 Scan CVE distant sur l\'image docker produite'
+                            // Par défaut, le scan docker est synchrone pour le pipeline de release. Le résultat final du scan sera attendu par le pipeline.
+                            // Pour forcer le pipeline à ne pas attendre le résultat du scan docker, il faut enlever le flag `--wait-for-result` à la commande de scan cve.
+                            // cf: https://docs.apps.eul.sncf.fr/share/scan-conteneur
+                            result = sh(script: "eul --repo-target ${targetRepositoryType} image scan $IMAGE_NAME:$IMAGE_VERSION --wait-for-result", returnStatus: true)
+                            if (result > 0) {
+                                if (result == 4) {
+                                    // La présence de CVE critiques dans l'image docker n'est pas bloquante.
+                                    // Pour mettre le pipeline en erreur, remplacer unstable "⚠️..." par error "❌..." dans la ligne suivante.
+                                    unstable "⚠️ Le scan CVE distant Docker a identifié des vulnérabilités critiques dans l'image produite"
+                                } else {
+                                    error '❌ Le Scan CVE distant Docker a échoué'
+                                }
+                            }
+
+                            println '✔️ Scan CVE distant sur l\'image docker produite effectué'
+                        }
+                    }
+                }
+
+                println '👍 Build du job de release terminé avec succès'
+                currentBuild.result = 'SUCCESS'
+            } catch (all) {
+                currentBuild.result = 'FAILURE'
+                // Envoi d'un mail en cas d'échec
+                emailext(
+                    body: '$DEFAULT_CONTENT',
+                    subject: '$DEFAULT_SUBJECT',
+                    // Destinataires : auteurs d'une modification du code et déclencheur du pipeline
+                    recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                    // Pour également envoyer le mail à une liste d'adresses (séparées par des ,) :
+                    //to: "adressmail1, adressmail2"
+                )
+                throw all
+            }
+            finally {
+                // Collecte et remontée dans Jenkins des problèmes rencontrés pendant le build, ainsi que les résultats des tests unitaires.
+                // Documentation : https://docs.apps.eul.sncf.fr/share/sharedlib-addngissuesreporttojob/
+                addNgIssuesReportToJob(
+                    'tools': [
+                        'cveScan',
+                        'maven',
+                        'taskScanner',
+                        ['junitPlugin': ['testResults': '**/target/surefire-reports/*.xml']],
+                        ['junitParser': ['pattern': '**/target/surefire-reports/*.xml']],
+                    ]
+                )
+                // Pour le suivi et les indicateurs eUL
+                eulNotify()
+            }
+        }
+    }
+}
