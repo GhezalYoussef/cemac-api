@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sncf.reseau.cemac.dto.CategorieMaintenanceDto;
-import sncf.reseau.cemac.entity.CategorieMaintenance;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 import sncf.reseau.cemac.mapper.CategorieMaintenanceDtoMapper;
 import sncf.reseau.cemac.repository.CategorieMaintenanceRepository;
