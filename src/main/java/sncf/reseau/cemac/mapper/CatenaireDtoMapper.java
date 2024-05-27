@@ -1,6 +1,5 @@
 package sncf.reseau.cemac.mapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sncf.reseau.cemac.dto.CatenaireDto;
 import sncf.reseau.cemac.entity.Catenaire;
