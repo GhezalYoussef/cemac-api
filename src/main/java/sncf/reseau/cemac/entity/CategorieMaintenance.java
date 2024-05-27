@@ -34,4 +34,6 @@ public class CategorieMaintenance {
     @Column(name = "vitesse_max")
     private Integer viteeseMax;
 
+    private String categorie;
+
 }
