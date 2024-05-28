@@ -35,7 +35,7 @@ public class AnalyseResult {
     @Column(name = "categorie_maintenance")
     private String categorieMaintenance;
 
-    private Float nbr;
+    private Float uop;
 
     private Float cout;
 }
