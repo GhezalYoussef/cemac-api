@@ -1,5 +1,6 @@
 package sncf.reseau.cemac.mapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sncf.reseau.cemac.dto.RequeteDto;
 import sncf.reseau.cemac.entity.Requete;
@@ -7,7 +8,8 @@ import sncf.reseau.cemac.entity.Requete;
 @Component
 public class RequeteDtoMapper {
 
-
+    @Autowired
+    AnalyseResultDtoMapper analyseResultDtoMapper;
     public RequeteDto map(Requete requete){
         return RequeteDto.builder()
                 .id(requete.getId())
@@ -26,6 +28,7 @@ public class RequeteDtoMapper {
                 .nombreAIG(requete.getNombreAIG())
                 .nombreAT(requete.getNombreAT())
                 .nombreIA(requete.getNombreIA())
+                .analyseResultList(analyseResultDtoMapper.map(requete.getAnalyseResultList()))
                 .build();
     }
 

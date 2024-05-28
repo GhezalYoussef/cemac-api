@@ -4,6 +4,8 @@ import lombok.*;
 import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -26,4 +28,5 @@ public class RequeteDto {
     private Integer nombreAIG;
     private Integer nombreAT;
     private Integer nombreIA;
+    private List<AnalyseResultDto> analyseResultList;
 }

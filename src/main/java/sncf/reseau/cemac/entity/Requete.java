@@ -7,6 +7,7 @@ import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -48,11 +49,6 @@ public class Requete {
     @Column(name = "categorie_maintenance")
     private ECategorie categorieMaintenance;
 
-    @ManyToOne
-    @JsonBackReference
-    @JoinColumn(name = "type_installation_tension")
-    private Catenaire typeInstallationTension;
-
     @Column(name = "nombre_ml")
     private Integer nombreML;
 
@@ -67,5 +63,14 @@ public class Requete {
 
     @Column(name = "nombre_ia")
     private Integer nombreIA;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "type_installation_tension")
+    private Catenaire typeInstallationTension;
+
+    @JoinColumn(name="requete")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AnalyseResult> analyseResultList;
 
 }
