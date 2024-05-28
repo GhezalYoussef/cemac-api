@@ -1,7 +1,6 @@
 package sncf.reseau.cemac.service;
 
 import sncf.reseau.cemac.dto.FamilleCatenaireDto;
-import sncf.reseau.cemac.entity.FamilleCatenaire;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 
 import java.util.List;
