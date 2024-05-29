@@ -2,6 +2,7 @@ package sncf.reseau.cemac.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
 @Getter
@@ -34,6 +35,9 @@ public class CategorieMaintenance {
     @Column(name = "vitesse_max")
     private Integer viteeseMax;
 
-    private String categorie;
+    @NonNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categorie_maintenance")
+    private ECategorie categorieMaintenance;
 
 }
