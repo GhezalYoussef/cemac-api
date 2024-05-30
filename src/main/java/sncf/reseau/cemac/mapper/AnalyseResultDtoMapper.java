@@ -19,7 +19,7 @@ public class AnalyseResultDtoMapper {
                 .refResult(analyseResult.getRefResult())
                 .sousCategorie(analyseResult.getSousCategorie())
                 .categorie(analyseResult.getCategorie())
-                .nbr(analyseResult.getUop())
+                .uop(analyseResult.getUop())
                 .cout(analyseResult.getCout())
                 .build();
     }

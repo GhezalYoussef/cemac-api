@@ -17,7 +17,6 @@ public class PeriodiciteDtoMapper {
     public PeriodiciteDto map(Periodicite periodicite){
         return PeriodiciteDto.builder()
                 .id(periodicite.getId())
-                .catenaires(catenaireDtoMapper.map(periodicite.getCatenaires()))
                 .categorieOperation(periodicite.getCategorieOperation())
                 .sousCategorieOperation(periodicite.getSousCategorieOperation())
                 .libelle(periodicite.getLibelle())

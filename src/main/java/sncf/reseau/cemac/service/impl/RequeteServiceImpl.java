@@ -3,16 +3,24 @@ package sncf.reseau.cemac.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sncf.reseau.cemac.dto.AnalyseResultDto;
+import sncf.reseau.cemac.dto.PeriodiciteDto;
 import sncf.reseau.cemac.dto.RequeteDto;
+import sncf.reseau.cemac.entity.Catenaire;
 import sncf.reseau.cemac.entity.Requete;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
+import sncf.reseau.cemac.mapper.PeriodiciteDtoMapper;
 import sncf.reseau.cemac.mapper.RequeteDtoMapper;
+import sncf.reseau.cemac.repository.CatenaireRepository;
+import sncf.reseau.cemac.repository.PeriodiciteRepository;
 import sncf.reseau.cemac.repository.RequeteRepository;
 import sncf.reseau.cemac.service.RequeteService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -22,11 +30,23 @@ public class RequeteServiceImpl implements RequeteService {
 
     private final RequeteDtoMapper requeteDtoMapper;
 
+    private final CatenaireRepository catenaireRepository;
+
+    private final PeriodiciteRepository periodiciteRepository;
+
+    private final PeriodiciteDtoMapper periodiciteDtoMapper;
+
     @Autowired
     public RequeteServiceImpl(RequeteRepository requeteRepository,
-                              RequeteDtoMapper requeteDtoMapper){
+                              RequeteDtoMapper requeteDtoMapper,
+                              CatenaireRepository catenaireRepository,
+                              PeriodiciteRepository periodiciteRepository,
+                              PeriodiciteDtoMapper periodiciteDtoMapper){
         this.requeteDtoMapper = requeteDtoMapper;
         this.requeteRepository = requeteRepository;
+        this.catenaireRepository = catenaireRepository;
+        this.periodiciteRepository = periodiciteRepository;
+        this.periodiciteDtoMapper = periodiciteDtoMapper;
     }
 
     @Override
@@ -69,6 +89,25 @@ public class RequeteServiceImpl implements RequeteService {
 
     @Override
     public RequeteDto getAnalyseResult(RequeteDto requeteDto) {
-        return null;
+        List<AnalyseResultDto> analyseResultDtoList = new ArrayList<>();
+        Catenaire catenaire = catenaireRepository.findById(requeteDto.getTypeInstallationTension()).orElseThrow();
+        List<PeriodiciteDto> periodiciteDtoList = catenaire.getPeriodicites()
+                .stream()
+                .map(periodiciteDtoMapper::map)
+                .toList();
+        AtomicInteger i = new AtomicInteger();
+        periodiciteDtoList.forEach(
+                periodiciteDto -> {
+                    AnalyseResultDto analyseResultDto = new AnalyseResultDto();
+                    analyseResultDto.setRequete(requeteDto.getId());
+                    analyseResultDto.setRefResult("OP_"+i.getAndIncrement());
+                    analyseResultDto.setCategorie(requeteDto.getCategorieMaintenance().name());
+                    analyseResultDto.setOperation(periodiciteDto.getLibelle());
+                    analyseResultDto.setCategorie(periodiciteDto.getCategorieOperation());
+                    analyseResultDto.setSousCategorie(periodiciteDto.getSousCategorieOperation());
+                    analyseResultDtoList.add(analyseResultDto);
+                });
+        requeteDto.setAnalyseResultList(analyseResultDtoList);
+        return requeteDto;
     }
 }

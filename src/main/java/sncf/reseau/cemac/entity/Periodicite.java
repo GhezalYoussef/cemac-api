@@ -25,8 +25,8 @@ public class Periodicite {
     @ManyToMany
     @JoinTable(
             name = "periodicite_catenaire",
-            joinColumns = @JoinColumn(name = "periodicite_id"),
-            inverseJoinColumns = @JoinColumn(name = "catenaire_id")
+            joinColumns = @JoinColumn(name = "periodicite_id", referencedColumnName="id"),
+            inverseJoinColumns = @JoinColumn(name = "catenaire_id", referencedColumnName="id")
     )
     private List<Catenaire> catenaires;
 
