@@ -32,6 +32,9 @@ public class AnalyseResult {
 
     private String operation;
 
+    @Column(name = "sous_operation")
+    private String SousOperation;
+
     @Column(name = "categorie_maintenance")
     private String categorieMaintenance;
 

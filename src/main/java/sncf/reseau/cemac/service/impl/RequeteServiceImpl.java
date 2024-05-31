@@ -3,14 +3,17 @@ package sncf.reseau.cemac.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sncf.reseau.cemac.dto.AnalyseResultDto;
 import sncf.reseau.cemac.dto.PeriodiciteDto;
 import sncf.reseau.cemac.dto.RequeteDto;
+import sncf.reseau.cemac.entity.AnalyseResult;
 import sncf.reseau.cemac.entity.Catenaire;
 import sncf.reseau.cemac.entity.Requete;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 import sncf.reseau.cemac.mapper.PeriodiciteDtoMapper;
 import sncf.reseau.cemac.mapper.RequeteDtoMapper;
+import sncf.reseau.cemac.repository.AnalyseResultRepository;
 import sncf.reseau.cemac.repository.CatenaireRepository;
 import sncf.reseau.cemac.repository.PeriodiciteRepository;
 import sncf.reseau.cemac.repository.RequeteRepository;
@@ -21,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,17 +40,21 @@ public class RequeteServiceImpl implements RequeteService {
 
     private final PeriodiciteDtoMapper periodiciteDtoMapper;
 
+    private final AnalyseResultRepository analyseResultRepository;
+
     @Autowired
     public RequeteServiceImpl(RequeteRepository requeteRepository,
                               RequeteDtoMapper requeteDtoMapper,
                               CatenaireRepository catenaireRepository,
                               PeriodiciteRepository periodiciteRepository,
-                              PeriodiciteDtoMapper periodiciteDtoMapper){
+                              PeriodiciteDtoMapper periodiciteDtoMapper,
+                              AnalyseResultRepository analyseResultRepository){
         this.requeteDtoMapper = requeteDtoMapper;
         this.requeteRepository = requeteRepository;
         this.catenaireRepository = catenaireRepository;
         this.periodiciteRepository = periodiciteRepository;
         this.periodiciteDtoMapper = periodiciteDtoMapper;
+        this.analyseResultRepository = analyseResultRepository;
     }
 
     @Override
@@ -69,7 +77,7 @@ public class RequeteServiceImpl implements RequeteService {
     @Override
     public RequeteDto update(RequeteDto requeteDto) {
         log.info("Modifier la requête : [" + requeteDto.getRequeteRef() + "]");
-        RequeteDto requeteUpdate;
+        Catenaire catenaire = catenaireRepository.findById(requeteDto.getTypeInstallationTension()).orElseThrow();
         Requete requete = new Requete();
         requete.setId(requeteDto.getId());
         requete.setRequeteRef(requeteDto.getRequeteRef());
@@ -77,8 +85,36 @@ public class RequeteServiceImpl implements RequeteService {
         requete.setCreateur(requeteDto.getCreateur());
         requete.setDateModification(Instant.now().truncatedTo(ChronoUnit.SECONDS));
         requete.setModificateur(requeteDto.getModificateur());
-        requeteUpdate = requeteDtoMapper.map(requeteRepository.saveAndFlush(requete));
-        return requeteUpdate;
+        requete.setTypeLigne(requeteDto.getTypeLigne());
+        requete.setNbrPanto(requeteDto.getNbrPanto());
+        requete.setVitesse(requeteDto.getVitesse());
+        requete.setCategorieMaintenance(requeteDto.getCategorieMaintenance());
+        requete.setTypeInstallationTension(catenaire);
+        requete.setNombreML(requeteDto.getNombreML());
+        requete.setNombreIS(requeteDto.getNombreIS());
+        requete.setNombreIA(requeteDto.getNombreAIG());
+        requete.setNombreAT(requeteDto.getNombreAT());
+        requete.setNombreIA(requeteDto.getNombreIA());
+        requete.setCategorieMaintenance(requeteDto.getCategorieMaintenance());
+        requete.setAnalyseResultList(requeteDto.getAnalyseResultList()
+                .stream()
+                .map(analyseResultDto -> saveAnalyseResult(analyseResultDto, requete))
+                .collect(Collectors.toList()));
+        return requeteDtoMapper.map(requeteRepository.saveAndFlush(requete));
+    }
+
+    public AnalyseResult saveAnalyseResult(AnalyseResultDto analyseResultDto, Requete requete){
+        log.info("Sauvegarder l'analyse : [" + analyseResultDto.toString() + "]");
+        AnalyseResult analyseResult = new AnalyseResult();
+        analyseResult.setRequete(requete);
+        analyseResult.setId(analyseResultDto.getId());
+        analyseResult.setCategorie(analyseResultDto.getRefResult());
+        analyseResult.setSousCategorie(analyseResultDto.getSousCategorie());
+        analyseResult.setOperation(analyseResultDto.getOperation());
+        analyseResult.setCategorieMaintenance(analyseResultDto.getCategorieMaintenance());
+        analyseResult.setUop(analyseResultDto.getUop());
+        analyseResult.setCout(analyseResultDto.getCout());
+        return analyseResultRepository.save(analyseResult);
     }
 
     @Override
@@ -88,11 +124,13 @@ public class RequeteServiceImpl implements RequeteService {
     }
 
     @Override
+    @Transactional
     public RequeteDto getAnalyseResult(RequeteDto requeteDto) {
         List<AnalyseResultDto> analyseResultDtoList = new ArrayList<>();
-        Catenaire catenaire = catenaireRepository.findById(requeteDto.getTypeInstallationTension()).orElseThrow();
-        List<PeriodiciteDto> periodiciteDtoList = catenaire.getPeriodicites()
+        List<PeriodiciteDto> periodiciteDtoList = getCatenaireById(requeteDto.getId())
+                .getPeriodicites()
                 .stream()
+                .filter(periodicite -> periodicite.getCategorieMaintenance().equals(requeteDto.getCategorieMaintenance()))
                 .map(periodiciteDtoMapper::map)
                 .toList();
         AtomicInteger i = new AtomicInteger();
@@ -101,13 +139,23 @@ public class RequeteServiceImpl implements RequeteService {
                     AnalyseResultDto analyseResultDto = new AnalyseResultDto();
                     analyseResultDto.setRequete(requeteDto.getId());
                     analyseResultDto.setRefResult("OP_"+i.getAndIncrement());
-                    analyseResultDto.setCategorie(requeteDto.getCategorieMaintenance().name());
-                    analyseResultDto.setOperation(periodiciteDto.getLibelle());
                     analyseResultDto.setCategorie(periodiciteDto.getCategorieOperation());
                     analyseResultDto.setSousCategorie(periodiciteDto.getSousCategorieOperation());
+                    analyseResultDto.setOperation(periodiciteDto.getLibelle());
+                    analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
+                    analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance().name());
+                    analyseResultDto.setUop(0f);
+                    analyseResultDto.setCout(0f);
                     analyseResultDtoList.add(analyseResultDto);
                 });
         requeteDto.setAnalyseResultList(analyseResultDtoList);
         return requeteDto;
+    }
+
+    @Transactional
+    public Catenaire getCatenaireById(Long id) {
+        Catenaire catenaire = catenaireRepository.findById(id).orElseThrow();
+        catenaire.getPeriodicites().size(); // Initialize the collection
+        return catenaire;
     }
 }

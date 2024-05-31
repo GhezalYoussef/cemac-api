@@ -17,6 +17,7 @@ public class AnalyseResultDto {
     private String categorie;
     private String sousCategorie;
     private String operation;
+    private String sousOperation;
     private String categorieMaintenance;
     private Float uop;
     private Float cout;

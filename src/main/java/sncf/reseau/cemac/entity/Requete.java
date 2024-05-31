@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "periodicite")
+@Table(name = "requete")
 public class Requete {
 
     @Id
