@@ -34,4 +34,5 @@ public class CatenaireServiceImpl implements CatenaireService {
                 .map(catenaireDtoMapper::map)
                 .toList();
     }
+
 }
