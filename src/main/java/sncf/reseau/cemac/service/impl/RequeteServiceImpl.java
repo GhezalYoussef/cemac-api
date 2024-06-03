@@ -10,6 +10,7 @@ import sncf.reseau.cemac.dto.RequeteDto;
 import sncf.reseau.cemac.entity.AnalyseResult;
 import sncf.reseau.cemac.entity.Catenaire;
 import sncf.reseau.cemac.entity.Requete;
+import sncf.reseau.cemac.enumeration.EUnit;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 import sncf.reseau.cemac.mapper.PeriodiciteDtoMapper;
 import sncf.reseau.cemac.mapper.RequeteDtoMapper;
@@ -92,7 +93,7 @@ public class RequeteServiceImpl implements RequeteService {
         requete.setTypeInstallationTension(catenaire);
         requete.setNombreML(requeteDto.getNombreML());
         requete.setNombreIS(requeteDto.getNombreIS());
-        requete.setNombreIA(requeteDto.getNombreAIG());
+        requete.setNombreAIG(requeteDto.getNombreAIG());
         requete.setNombreAT(requeteDto.getNombreAT());
         requete.setNombreIA(requeteDto.getNombreIA());
         requete.setCategorieMaintenance(requeteDto.getCategorieMaintenance());
@@ -127,7 +128,7 @@ public class RequeteServiceImpl implements RequeteService {
     @Transactional
     public RequeteDto getAnalyseResult(RequeteDto requeteDto) {
         List<AnalyseResultDto> analyseResultDtoList = new ArrayList<>();
-        List<PeriodiciteDto> periodiciteDtoList = getCatenaireById(requeteDto.getId())
+        List<PeriodiciteDto> periodiciteDtoList = getCatenaireById(requeteDto.getTypeInstallationTension())
                 .getPeriodicites()
                 .stream()
                 .filter(periodicite -> periodicite.getCategorieMaintenance().equals(requeteDto.getCategorieMaintenance()))
@@ -144,12 +145,51 @@ public class RequeteServiceImpl implements RequeteService {
                     analyseResultDto.setOperation(periodiciteDto.getLibelle());
                     analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
                     analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance().name());
-                    analyseResultDto.setUop(0f);
+                    analyseResultDto.setUop(getUOP(requeteDto,periodiciteDto));
                     analyseResultDto.setCout(0f);
                     analyseResultDtoList.add(analyseResultDto);
                 });
         requeteDto.setAnalyseResultList(analyseResultDtoList);
         return requeteDto;
+    }
+
+    public Float getUOP(RequeteDto requeteDto, PeriodiciteDto periodiciteDto) {
+        float result = 0;
+
+        switch (periodiciteDto.getSousOperation()) {
+            case "AT":
+                result = calculateUOP(requeteDto.getNombreAT(), periodiciteDto);
+                break;
+            case "IS":
+                result = calculateUOP(requeteDto.getNombreIS(), periodiciteDto);
+                break;
+            case "IA":
+                result = calculateUOP(requeteDto.getNombreIA(), periodiciteDto);
+                break;
+            case "AIG":
+                result = calculateUOP(requeteDto.getNombreAIG(), periodiciteDto);
+                break;
+            default:
+                result = calculateUOP(requeteDto.getNombreML(), periodiciteDto);
+                break;
+        }
+
+        return result;
+    }
+
+    private Float calculateUOP(int nombre, PeriodiciteDto periodiciteDto) {
+        if (nombre <= 0) {
+            return 0f;
+        }
+
+        switch (periodiciteDto.getUnit()) {
+            case ANS:
+                return nombre / (float) periodiciteDto.getPeriode();
+            case JOURS:
+                return nombre / ((float) periodiciteDto.getPeriode() / 365);
+            default: // Assume the default unit is MONTHS if not specified
+                return nombre / ((float) periodiciteDto.getPeriode() / 12);
+        }
     }
 
     @Transactional
