@@ -33,7 +33,7 @@ public class CategorieMaintenance {
     private Integer vitesseMin;
 
     @Column(name = "vitesse_max")
-    private Integer viteeseMax;
+    private Integer vitesseMax;
 
     @NonNull
     @Enumerated(EnumType.STRING)

@@ -16,7 +16,7 @@ public class CategorieMaintenanceDtoMapper {
                 .typeLigne(categorieMaintenance.getTypeLigne())
                 .pantoMin(categorieMaintenance.getPantoMin())
                 .pantoMax(categorieMaintenance.getPantoMax())
-                .viteeseMax(categorieMaintenance.getViteeseMax())
+                .vitesseMax(categorieMaintenance.getVitesseMax())
                 .vitesseMin(categorieMaintenance.getVitesseMin())
                 .categorieMaintenance(categorieMaintenance.getCategorieMaintenance())
                 .build();

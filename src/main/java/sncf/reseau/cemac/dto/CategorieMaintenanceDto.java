@@ -17,7 +17,7 @@ public class CategorieMaintenanceDto {
     private Integer pantoMin;
     private Integer pantoMax;
     private Integer vitesseMin;
-    private Integer viteeseMax;
+    private Integer vitesseMax;
     private ECategorie categorieMaintenance;
 
 }
