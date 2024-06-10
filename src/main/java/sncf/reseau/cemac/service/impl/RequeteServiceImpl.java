@@ -162,7 +162,6 @@ public class RequeteServiceImpl implements RequeteService {
                     }else{
                         analyseResultDto.setUop(0f);
                     }
-
                     analyseResultDto.setCout(0f);
                     analyseResultDtoList.add(analyseResultDto);
                 });
