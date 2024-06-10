@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sncf.reseau.cemac.enumeration.ELigne;
 
 @Data
 @Builder
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class FamilleCatenaireDto {
 
     private Long id;
+    private ELigne typeLigne;
     private String libelle;
 
 }

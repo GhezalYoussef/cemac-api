@@ -2,6 +2,7 @@ package sncf.reseau.cemac.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sncf.reseau.cemac.enumeration.ELigne;
 
 @Getter
 @Setter
@@ -15,6 +16,10 @@ public class FamilleCatenaire {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NonNull
+    @Enumerated(EnumType.STRING)
+    private ELigne typeLigne;
 
     private String libelle;
 

@@ -14,6 +14,7 @@ public class FamilleCatenaireDtoMapper {
 
         return FamilleCatenaireDto.builder()
                 .id(familleCatenaire.getId())
+                .typeLigne(familleCatenaire.getTypeLigne())
                 .libelle(familleCatenaire.getLibelle())
                 .build();
     }

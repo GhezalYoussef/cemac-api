@@ -9,6 +9,7 @@ import sncf.reseau.cemac.dto.PeriodiciteDto;
 import sncf.reseau.cemac.dto.RequeteDto;
 import sncf.reseau.cemac.entity.AnalyseResult;
 import sncf.reseau.cemac.entity.Catenaire;
+import sncf.reseau.cemac.entity.Periodicite;
 import sncf.reseau.cemac.entity.Requete;
 import sncf.reseau.cemac.enumeration.EUnit;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
@@ -22,9 +23,9 @@ import sncf.reseau.cemac.service.RequeteService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -127,28 +128,45 @@ public class RequeteServiceImpl implements RequeteService {
     @Override
     @Transactional
     public RequeteDto getAnalyseResult(RequeteDto requeteDto) {
+
         List<AnalyseResultDto> analyseResultDtoList = new ArrayList<>();
-        List<PeriodiciteDto> periodiciteDtoList = getCatenaireById(requeteDto.getTypeInstallationTension())
+        Set<String> libelleList = new LinkedHashSet<>();
+
+        List<PeriodiciteDto> periodiciteDtoListByCategorie = getCatenaireById(requeteDto.getTypeInstallationTension())
                 .getPeriodicites()
                 .stream()
                 .filter(periodicite -> periodicite.getCategorieMaintenance().equals(requeteDto.getCategorieMaintenance()))
                 .map(periodiciteDtoMapper::map)
                 .toList();
+
+        List<PeriodiciteDto> periodiciteDtoAllList = periodiciteRepository
+                .findAll()
+                .stream()
+                .filter(periodicite -> libelleList.add(periodicite.getLibelle() + "-" + periodicite.getSousOperation()))
+                .map(periodiciteDtoMapper::map)
+                .toList();
+
         AtomicInteger i = new AtomicInteger();
-        periodiciteDtoList.forEach(
+        periodiciteDtoAllList.forEach(
                 periodiciteDto -> {
                     AnalyseResultDto analyseResultDto = new AnalyseResultDto();
                     analyseResultDto.setRequete(requeteDto.getId());
-                    analyseResultDto.setRefResult("OP_"+i.getAndIncrement());
+                    analyseResultDto.setRefResult("OP_" + i.getAndIncrement());
                     analyseResultDto.setCategorie(periodiciteDto.getCategorieOperation());
                     analyseResultDto.setSousCategorie(periodiciteDto.getSousCategorieOperation());
                     analyseResultDto.setOperation(periodiciteDto.getLibelle());
                     analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
                     analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance().name());
-                    analyseResultDto.setUop(getUOP(requeteDto,periodiciteDto));
+                    if(periodiciteDtoListByCategorie.contains(periodiciteDto)){
+                        analyseResultDto.setUop(getUOP(requeteDto, periodiciteDto));
+                    }else{
+                        analyseResultDto.setUop(0f);
+                    }
+
                     analyseResultDto.setCout(0f);
                     analyseResultDtoList.add(analyseResultDto);
                 });
+
         requeteDto.setAnalyseResultList(analyseResultDtoList);
         return requeteDto;
     }
@@ -187,7 +205,7 @@ public class RequeteServiceImpl implements RequeteService {
                 return nombre / (float) periodiciteDto.getPeriode();
             case JOURS:
                 return nombre / ((float) periodiciteDto.getPeriode() / 365);
-            default: // Assume the default unit is MONTHS if not specified
+            default:
                 return nombre / ((float) periodiciteDto.getPeriode() / 12);
         }
     }
