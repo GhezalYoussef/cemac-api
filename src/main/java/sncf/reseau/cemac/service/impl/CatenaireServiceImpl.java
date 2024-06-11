@@ -12,6 +12,7 @@ import sncf.reseau.cemac.repository.CatenaireRepository;
 import sncf.reseau.cemac.repository.FamilleCatenaireRepository;
 import sncf.reseau.cemac.service.CatenaireService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -50,11 +51,11 @@ public class CatenaireServiceImpl implements CatenaireService {
         FamilleCatenaire familleCatenaire = familleCatenaireRepository.findById(catenaireDto.getFamilleCatenaire()).orElseThrow();
 
         Catenaire catenaire = new Catenaire();
-        catenaire.setId(catenaire.getId());
+        catenaire.setId(catenaireDto.getId());
         catenaire.setFamilleCatenaire(familleCatenaire);
         catenaire.setLibelle(catenaireDto.getLibelle());
 
-        return catenaireDtoMapper.map(catenaireRepository.save(catenaire));
+        return catenaireDtoMapper.map(catenaireRepository.saveAndFlush(catenaire));
     }
 
     @Override

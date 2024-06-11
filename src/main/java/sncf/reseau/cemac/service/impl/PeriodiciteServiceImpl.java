@@ -73,7 +73,7 @@ public class PeriodiciteServiceImpl implements PeriodiciteService {
         periodicite.setUnit(periodiciteDto.getUnit());
         periodicite.setPeriode(periodiciteDto.getPeriode());
 
-        return periodiciteDtoMapper.map(periodiciteRepository.save(periodicite));
+        return periodiciteDtoMapper.map(periodiciteRepository.saveAndFlush(periodicite));
     }
 
     @Override

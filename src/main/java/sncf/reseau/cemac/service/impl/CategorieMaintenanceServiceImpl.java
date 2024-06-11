@@ -46,9 +46,10 @@ public class CategorieMaintenanceServiceImpl implements CategorieMaintenanceServ
         categorieMaintenance.setTypeLigne(categorieMaintenanceDto.getTypeLigne());
         categorieMaintenance.setPantoMin(categorieMaintenanceDto.getPantoMin());
         categorieMaintenance.setPantoMax(categorieMaintenanceDto.getPantoMax());
-        categorieMaintenance.setVitesseMin(categorieMaintenanceDto.getPantoMin());
-        categorieMaintenance.setPantoMax(categorieMaintenanceDto.getPantoMax());
-        return categorieMaintenanceDtoMapper.map(categorieMaintenanceRepository.save(categorieMaintenance));
+        categorieMaintenance.setVitesseMin(categorieMaintenanceDto.getVitesseMin());
+        categorieMaintenance.setVitesseMax(categorieMaintenanceDto.getVitesseMax());
+        categorieMaintenance.setCategorieMaintenance(categorieMaintenanceDto.getCategorieMaintenance());
+        return categorieMaintenanceDtoMapper.map(categorieMaintenanceRepository.saveAndFlush(categorieMaintenance));
     }
 
     @Override

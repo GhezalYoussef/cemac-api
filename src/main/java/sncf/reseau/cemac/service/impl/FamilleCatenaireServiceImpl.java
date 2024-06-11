@@ -47,7 +47,7 @@ public class FamilleCatenaireServiceImpl implements FamilleCatenaireService {
         familleCatenaire.setLibelle(familleCatenaireDto.getLibelle());
         familleCatenaire.setTypeLigne(familleCatenaireDto.getTypeLigne());
 
-        return familleCatenaireDtoMapper.map(familleCatenaireRepository.save(familleCatenaire));
+        return familleCatenaireDtoMapper.map(familleCatenaireRepository.saveAndFlush(familleCatenaire));
     }
 
     @Override
