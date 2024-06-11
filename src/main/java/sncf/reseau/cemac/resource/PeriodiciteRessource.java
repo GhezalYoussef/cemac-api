@@ -3,10 +3,8 @@ package sncf.reseau.cemac.resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 import sncf.reseau.cemac.dto.PeriodiciteDto;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 import sncf.reseau.cemac.service.PeriodiciteService;
@@ -23,6 +21,27 @@ public class PeriodiciteRessource {
     @GetMapping("list-periodicite")
     public ResponseEntity<List<PeriodiciteDto>> findAll() throws ResourceNotFoundException {
         return new ResponseEntity<>(periodiciteService.getPeriodiciteList(), HttpStatus.ACCEPTED);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/update-periodicite", method = RequestMethod.POST)
+    public ResponseEntity<PeriodiciteDto> create(@RequestBody PeriodiciteDto periodiciteDto) {
+        try {
+            PeriodiciteDto periodiciteDtoUpdate = periodiciteService.update(periodiciteDto);
+            return new ResponseEntity<>(periodiciteDtoUpdate, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/delete-periodicite/{id}")
+    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
+        try {
+            periodiciteService.delete(id);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(Boolean.TRUE);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Boolean.FALSE);
+        }
     }
 
 }
