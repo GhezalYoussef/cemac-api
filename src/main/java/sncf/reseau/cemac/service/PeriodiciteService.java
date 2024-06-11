@@ -8,4 +8,8 @@ import java.util.List;
 public interface PeriodiciteService {
 
     List<PeriodiciteDto> getPeriodiciteList() throws ResourceNotFoundException;
+
+    PeriodiciteDto update(PeriodiciteDto periodiciteDto) throws ResourceNotFoundException;
+
+    void delete(Long periodiciteId) throws ResourceNotFoundException;
 }

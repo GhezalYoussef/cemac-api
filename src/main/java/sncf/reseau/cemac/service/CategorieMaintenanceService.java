@@ -9,4 +9,7 @@ public interface CategorieMaintenanceService {
 
    List<CategorieMaintenanceDto> getCategorieMaintenanceList() throws ResourceNotFoundException;
 
+   CategorieMaintenanceDto update(CategorieMaintenanceDto categorieMaintenanceDto) throws ResourceNotFoundException;
+
+   void delete(Long categorieId) throws ResourceNotFoundException;
 }

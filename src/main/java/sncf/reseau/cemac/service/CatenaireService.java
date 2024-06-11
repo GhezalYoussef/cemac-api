@@ -8,4 +8,8 @@ import java.util.List;
 public interface CatenaireService {
 
     List<CatenaireDto> getListCatenaireList() throws ResourceNotFoundException;
+
+    CatenaireDto update(CatenaireDto catenaireDto) throws ResourceNotFoundException;
+
+    void delete(Long catenaireId) throws ResourceNotFoundException;
 }

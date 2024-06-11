@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sncf.reseau.cemac.dto.CategorieMaintenanceDto;
+import sncf.reseau.cemac.entity.CategorieMaintenance;
+import sncf.reseau.cemac.entity.Utilisateur;
 import sncf.reseau.cemac.exception.ResourceNotFoundException;
 import sncf.reseau.cemac.mapper.CategorieMaintenanceDtoMapper;
 import sncf.reseau.cemac.repository.CategorieMaintenanceRepository;
@@ -33,5 +35,25 @@ public class CategorieMaintenanceServiceImpl implements CategorieMaintenanceServ
                 .stream()
                 .map(categorieMaintenanceDtoMapper::map)
                 .toList();
+    }
+
+    @Override
+    public CategorieMaintenanceDto update(CategorieMaintenanceDto categorieMaintenanceDto) throws ResourceNotFoundException {
+
+        log.info("Modifier la categorie : [" + categorieMaintenanceDto.toString() + "]");
+        CategorieMaintenance categorieMaintenance = new CategorieMaintenance();
+        categorieMaintenance.setId(categorieMaintenanceDto.getId());
+        categorieMaintenance.setTypeLigne(categorieMaintenanceDto.getTypeLigne());
+        categorieMaintenance.setPantoMin(categorieMaintenanceDto.getPantoMin());
+        categorieMaintenance.setPantoMax(categorieMaintenanceDto.getPantoMax());
+        categorieMaintenance.setVitesseMin(categorieMaintenanceDto.getPantoMin());
+        categorieMaintenance.setPantoMax(categorieMaintenanceDto.getPantoMax());
+        return categorieMaintenanceDtoMapper.map(categorieMaintenanceRepository.save(categorieMaintenance));
+    }
+
+    @Override
+    public void delete(Long categorieId) throws ResourceNotFoundException {
+        log.info("Supprimer la categorie de maintenance : [" + categorieId + "]");
+        categorieMaintenanceRepository.deleteById(categorieId);
     }
 }
