@@ -1,7 +1,5 @@
-ALTER SEQUENCE panto_ref_id_seq RESTART WITH 100;
-ALTER SEQUENCE section_ref_id_seq RESTART WITH 100;
-ALTER SEQUENCE stop_signal_ref_id_seq RESTART WITH 100;
-ALTER SEQUENCE train_ref_id_seq RESTART WITH 300;
+ALTER SEQUENCE catenaire_id_seq RESTART WITH 100;
+ALTER SEQUENCE categorie_maintenance_id_seq RESTART WITH 100;
+ALTER SEQUENCE famille_catenaire_id_seq RESTART WITH 100;
+ALTER SEQUENCE periodicite_id_seq RESTART WITH 300;
 ALTER SEQUENCE utilisateur_id_seq RESTART WITH 100;
-ALTER SEQUENCE profil_id_seq RESTART WITH 100;
-ALTER SEQUENCE groupe_id_seq RESTART WITH 100;
