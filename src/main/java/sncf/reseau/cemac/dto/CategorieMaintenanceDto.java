@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
 @Data
@@ -19,6 +18,6 @@ public class CategorieMaintenanceDto {
     private Integer pantoMax;
     private Integer vitesseMin;
     private Integer vitesseMax;
-    private ECategorie categorieMaintenance;
+    private String categorieMaintenance;
 
 }

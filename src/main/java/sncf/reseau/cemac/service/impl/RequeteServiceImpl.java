@@ -154,7 +154,7 @@ public class RequeteServiceImpl implements RequeteService {
                     analyseResultDto.setSousCategorie(periodiciteDto.getSousCategorieOperation());
                     analyseResultDto.setOperation(periodiciteDto.getLibelle());
                     analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
-                    analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance().name());
+                    analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance());
                     if(periodiciteDtoListByCategorie.contains(periodiciteDto)){
                         analyseResultDto.setUop(getUOP(requeteDto, periodiciteDto));
                     }else{

@@ -2,7 +2,6 @@ package sncf.reseau.cemac.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 import sncf.reseau.cemac.enumeration.ETension;
 import sncf.reseau.cemac.enumeration.EUnit;
@@ -51,10 +50,8 @@ public class Periodicite {
     @Column(name = "tension")
     private ETension tension;
 
-    @NonNull
-    @Enumerated(EnumType.STRING)
     @Column(name = "categorie_maintenance")
-    private ECategorie categorieMaintenance;
+    private String categorieMaintenance;
 
     @NonNull
     @Enumerated(EnumType.STRING)

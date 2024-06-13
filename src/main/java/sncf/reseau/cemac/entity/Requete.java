@@ -3,7 +3,6 @@ package sncf.reseau.cemac.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
 import java.time.Instant;
@@ -47,7 +46,7 @@ public class Requete {
     private Integer vitesse;
 
     @Column(name = "categorie_maintenance")
-    private ECategorie categorieMaintenance;
+    private String categorieMaintenance;
 
     @Column(name = "nombre_ml")
     private Integer nombreML;

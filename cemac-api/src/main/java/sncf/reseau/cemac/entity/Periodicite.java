@@ -2,7 +2,6 @@ package sncf.reseau.cemac.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 import sncf.reseau.cemac.enumeration.ETension;
 import sncf.reseau.cemac.enumeration.EUnit;

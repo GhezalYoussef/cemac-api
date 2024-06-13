@@ -1,7 +1,6 @@
 package sncf.reseau.cemac.dto;
 
 import lombok.*;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class RequeteDto {
     private ELigne typeLigne;
     private Integer nbrPanto;
     private Integer vitesse;
-    private ECategorie categorieMaintenance;
+    private String categorieMaintenance;
     private Long typeInstallationTension;
     private Integer nombreML;
     private Integer nombreIS;

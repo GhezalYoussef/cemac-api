@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sncf.reseau.cemac.enumeration.ECategorie;
 import sncf.reseau.cemac.enumeration.ELigne;
 import sncf.reseau.cemac.enumeration.ETension;
 import sncf.reseau.cemac.enumeration.EUnit;
@@ -25,7 +24,7 @@ public class PeriodiciteDto {
     private String sousOperation;
     private ELigne typeLigne;
     private ETension tension;
-    private ECategorie categorieMaintenance;
+    private String categorieMaintenance;
     private EUnit unit;
     private Integer periode;
 
