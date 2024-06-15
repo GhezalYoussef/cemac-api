@@ -33,7 +33,7 @@ public class ExcelDataReader {
 
         for (int i = 0; i < donnees.size(); i++) {
             try {
-                excelPeriodiciteDto.getPeriodiciteDtoList().add(PeriodiciteDto.builder()
+                excelPeriodiciteDto.getPeriodiciteList().add(PeriodiciteDto.builder()
                                 .categorieOperation(getCategorieOperation(donnees.get(i).get(CATEGORIE), i , CATEGORIE))
                                 .sousCategorieOperation(getSousCategorieOperation(donnees.get(i).get(SOUS_CATEGORIE), i , SOUS_CATEGORIE))
                                 .libelle(getOperation(donnees.get(i).get(OPERATION), i , OPERATION))

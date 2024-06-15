@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 public class ExcelServiceImpl implements ExcelService {
 
-    private final int SOME_FIXED_NUMBER = 10;
+    private final int SOME_FIXED_NUMBER = 11;
 
     private final CatenaireRepository catenaireRepository;
 

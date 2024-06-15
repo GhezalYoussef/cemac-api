@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ExcelPeriodiciteDto {
 
-    List<PeriodiciteDto> periodiciteDtoList = new ArrayList<>();
+    List<PeriodiciteDto> periodiciteList = new ArrayList<>();
     List<String> messageErreurList = new ArrayList<>();
 
 }
