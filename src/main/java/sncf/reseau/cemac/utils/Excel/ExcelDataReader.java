@@ -116,8 +116,8 @@ public class ExcelDataReader {
     private static ETension getTension(Object tension, int ligne, int column) {
         if (tension instanceof String) {
             return ((String) tension).toLowerCase().equals("1500") ? ETension._1500 : ETension._25000;
-        }else if(tension instanceof Integer) {
-            return String.valueOf(tension).equals("1500") ? ETension._1500 : ETension._25000;
+        }else if(tension instanceof Double) {
+            return String.valueOf(tension).equals("1500.0") ? ETension._1500 : ETension._25000;
         } else {
             throw new IllegalArgumentException(ligne + ":" + column + ": Erreur lors de la lecture du la coloumn tension dans le fichier Excel.");
         }
@@ -160,8 +160,8 @@ public class ExcelDataReader {
     }
 
     private static Integer getPeriode(Object periode, int ligne, int column) {
-        if (periode instanceof Integer) {
-            return Integer.valueOf(periode.toString());
+        if (periode instanceof Double) {
+            return  ((Double) periode).intValue();
         } else if (periode instanceof String) {
             return Integer.valueOf(Integer.valueOf(periode.toString()));
         } else {
