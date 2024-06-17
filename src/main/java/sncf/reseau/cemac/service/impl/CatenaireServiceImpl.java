@@ -12,7 +12,6 @@ import sncf.reseau.cemac.repository.CatenaireRepository;
 import sncf.reseau.cemac.repository.FamilleCatenaireRepository;
 import sncf.reseau.cemac.service.CatenaireService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
