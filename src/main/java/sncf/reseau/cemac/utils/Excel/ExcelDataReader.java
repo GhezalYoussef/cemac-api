@@ -116,6 +116,8 @@ public class ExcelDataReader {
     private static ETension getTension(Object tension, int ligne, int column) {
         if (tension instanceof String) {
             return ((String) tension).toLowerCase().equals("1500") ? ETension._1500 : ETension._25000;
+        }else if(tension instanceof Integer) {
+            return String.valueOf(tension).equals("1500") ? ETension._1500 : ETension._25000;
         } else {
             throw new IllegalArgumentException(ligne + ":" + column + ": Erreur lors de la lecture du la coloumn tension dans le fichier Excel.");
         }
@@ -132,9 +134,11 @@ public class ExcelDataReader {
                             catenaireDtoListUpdate.add(findCatenaireById(catenaireDtoList, Long.valueOf(idCatenaire)));
                         }
                     });
+            return catenaireDtoListUpdate;
+        }else{
+            throw new IllegalArgumentException(ligne + ":" + column + ": Erreur lors de la lecture de la liste des catenaires dans le fichier Excel.");
         }
 
-        return catenaireDtoListUpdate;
     }
 
     private static String getCategorieMaintenance(Object typeCategorie, int ligne, int column) {
