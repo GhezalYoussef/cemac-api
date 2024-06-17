@@ -34,6 +34,17 @@ public class PeriodiciteRessource {
         }
     }
 
+    @Transactional
+    @RequestMapping(value = "/update-periodicite-list", method = RequestMethod.POST)
+    public ResponseEntity<List<PeriodiciteDto>> createList(@RequestBody List<PeriodiciteDto> periodiciteDtoList) {
+        try {
+            List<PeriodiciteDto> periodiciteDtoListUpdate = periodiciteService.updateAll(periodiciteDtoList);
+            return new ResponseEntity<>(periodiciteDtoListUpdate, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @DeleteMapping("/delete-periodicite/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable Long id) {
         try {

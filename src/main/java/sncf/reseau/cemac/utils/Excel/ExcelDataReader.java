@@ -16,6 +16,7 @@ import java.util.List;
 @Component
 public class ExcelDataReader {
 
+    private final static int ID_PERIODE = 0;
     private final static int CATEGORIE = 1;
     private final static int SOUS_CATEGORIE = 2;
     private final static int OPERATION = 3;
@@ -34,6 +35,7 @@ public class ExcelDataReader {
         for (int i = 0; i < donnees.size(); i++) {
             try {
                 excelPeriodiciteDto.getPeriodiciteList().add(PeriodiciteDto.builder()
+                                .id(getIdPeriode(donnees.get(i).get(ID_PERIODE), i , ID_PERIODE))
                                 .categorieOperation(getCategorieOperation(donnees.get(i).get(CATEGORIE), i , CATEGORIE))
                                 .sousCategorieOperation(getSousCategorieOperation(donnees.get(i).get(SOUS_CATEGORIE), i , SOUS_CATEGORIE))
                                 .libelle(getOperation(donnees.get(i).get(OPERATION), i , OPERATION))
@@ -70,6 +72,16 @@ public class ExcelDataReader {
                 return cell.getCellFormula();
             default:
                 return "";
+        }
+    }
+
+    private static Long getIdPeriode(Object idOperation, int ligne, int column) {
+        if (idOperation instanceof Double) {
+            return  ((Double) idOperation).longValue();
+        } else if (idOperation instanceof String) {
+            return Long.valueOf(Integer.valueOf(idOperation.toString()));
+        } else {
+            throw new IllegalArgumentException(ligne + ":" + column + ": Erreur lors de la lecture de l'id de l'operation dans le fichier Excel.");
         }
     }
 

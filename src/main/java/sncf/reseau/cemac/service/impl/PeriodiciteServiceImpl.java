@@ -15,6 +15,7 @@ import sncf.reseau.cemac.repository.CatenaireRepository;
 import sncf.reseau.cemac.repository.PeriodiciteRepository;
 import sncf.reseau.cemac.service.PeriodiciteService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -76,6 +77,38 @@ public class PeriodiciteServiceImpl implements PeriodiciteService {
         periodicite.setPeriode(periodiciteDto.getPeriode());
 
         return periodiciteDtoMapper.map(periodiciteRepository.saveAndFlush(periodicite));
+    }
+
+    @Override
+    public List<PeriodiciteDto> updateAll(List<PeriodiciteDto> periodiciteDtoList) throws ResourceNotFoundException {
+
+        List<Periodicite> periodiciteList = new ArrayList<>();
+        periodiciteDtoList.forEach(
+                periodiciteDto -> {
+                    Periodicite periodicite = new Periodicite();
+                    List<Catenaire> catenaireList = catenaireRepository.findAllById(
+                            periodiciteDto.getCatenaires()
+                                    .stream()
+                                    .map(CatenaireDto::getId)
+                                    .toList()
+                    );
+
+                    periodicite.setId(periodiciteDto.getId());
+                    periodicite.setCatenaires(catenaireList);
+                    periodicite.setCategorieOperation(periodiciteDto.getCategorieOperation());
+                    periodicite.setSousCategorieOperation(periodiciteDto.getSousCategorieOperation());
+                    periodicite.setLibelle(periodiciteDto.getLibelle());
+                    periodicite.setSousOperation(periodiciteDto.getSousOperation());
+                    periodicite.setTypeLigne(periodiciteDto.getTypeLigne());
+                    periodicite.setTension(periodiciteDto.getTension());
+                    periodicite.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance());
+                    periodicite.setUnit(periodiciteDto.getUnit());
+                    periodicite.setPeriode(periodiciteDto.getPeriode());
+                    periodiciteList.add(periodicite);
+                }
+        );
+
+        return periodiciteDtoMapper.map(periodiciteRepository.saveAllAndFlush(periodiciteList));
     }
 
     @Override
