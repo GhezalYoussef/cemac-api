@@ -12,4 +12,5 @@ public interface RequeteService {
     RequeteDto update(RequeteDto requeteDto);
     void delete(Long id) throws ResourceNotFoundException;
     RequeteDto getAnalyseResult(RequeteDto requeteDto);
+    List<RequeteDto> getAnalyseResultList(List<RequeteDto> requeteDtoList);
 }

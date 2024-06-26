@@ -45,4 +45,8 @@ public class RequeteResource {
     public ResponseEntity<RequeteDto> analyseRequete(@RequestBody RequeteDto requeteDto){
         return new ResponseEntity<>(requeteService.getAnalyseResult(requeteDto), HttpStatus.ACCEPTED);
     }
+    @PostMapping(path = "/list/analyse")
+    public ResponseEntity<List<RequeteDto>> analyseRequete(@RequestBody List<RequeteDto> requeteDtoList){
+        return new ResponseEntity<>(requeteService.getAnalyseResultList(requeteDtoList), HttpStatus.ACCEPTED);
+    }
 }

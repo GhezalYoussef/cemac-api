@@ -167,6 +167,54 @@ public class RequeteServiceImpl implements RequeteService {
         return requeteDto;
     }
 
+    @Override
+    @Transactional
+    public List<RequeteDto> getAnalyseResultList(List<RequeteDto> requeteDtoList) {
+        requeteDtoList.forEach(
+                requeteDto -> {
+                    List<AnalyseResultDto> analyseResultDtoList = new ArrayList<>();
+                    Set<String> libelleList = new LinkedHashSet<>();
+
+                    List<PeriodiciteDto> periodiciteDtoListByCategorie = getCatenaireById(requeteDto.getTypeInstallationTension())
+                            .getPeriodicites()
+                            .stream()
+                            .filter(periodicite -> periodicite.getCategorieMaintenance().equals(requeteDto.getCategorieMaintenance()))
+                            .map(periodiciteDtoMapper::map)
+                            .toList();
+
+                    List<PeriodiciteDto> periodiciteDtoAllList = periodiciteRepository
+                            .findAll()
+                            .stream()
+                            .filter(periodicite -> libelleList.add(periodicite.getLibelle() + "-" + periodicite.getSousOperation()))
+                            .map(periodiciteDtoMapper::map)
+                            .toList();
+
+                    AtomicInteger i = new AtomicInteger();
+                    periodiciteDtoAllList.forEach(
+                            periodiciteDto -> {
+                                AnalyseResultDto analyseResultDto = new AnalyseResultDto();
+                                analyseResultDto.setRequete(requeteDto.getId());
+                                analyseResultDto.setRefResult("OP_" + i.getAndIncrement());
+                                analyseResultDto.setCategorie(periodiciteDto.getCategorieOperation());
+                                analyseResultDto.setSousCategorie(periodiciteDto.getSousCategorieOperation());
+                                analyseResultDto.setOperation(periodiciteDto.getLibelle());
+                                analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
+                                analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance());
+                                if(periodiciteDtoListByCategorie.contains(periodiciteDto)){
+                                    analyseResultDto.setUop(getUOP(requeteDto, periodiciteDto));
+                                }else{
+                                    analyseResultDto.setUop(0f);
+                                }
+                                analyseResultDto.setCout(0f);
+                                analyseResultDtoList.add(analyseResultDto);
+                            });
+
+                    requeteDto.setAnalyseResultList(analyseResultDtoList);
+                }
+        );
+        return requeteDtoList;
+    }
+
     public Float getUOP(RequeteDto requeteDto, PeriodiciteDto periodiciteDto) {
         float result = 0;
 
