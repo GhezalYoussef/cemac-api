@@ -154,8 +154,15 @@ public class RequeteServiceImpl implements RequeteService {
                     analyseResultDto.setOperation(periodiciteDto.getLibelle());
                     analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
                     analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance());
-                    if(periodiciteDtoListByCategorie.contains(periodiciteDto)){
-                        analyseResultDto.setUop(getUOP(requeteDto, periodiciteDto));
+                    if(periodiciteDtoListByCategorie
+                            .stream()
+                            .filter(periode -> periode.getLibelle().equals(periodiciteDto.getLibelle()) &&
+                                            periode.getSousOperation().equals(periodiciteDto.getSousOperation()))
+                            .findFirst()
+                            .isPresent()
+                    ){
+                        Float uop = getUOP(requeteDto, periodiciteDto);
+                        analyseResultDto.setUop(uop.isInfinite() ? 0f : uop);
                     }else{
                         analyseResultDto.setUop(0f);
                     }
@@ -200,8 +207,14 @@ public class RequeteServiceImpl implements RequeteService {
                                 analyseResultDto.setOperation(periodiciteDto.getLibelle());
                                 analyseResultDto.setSousOperation(periodiciteDto.getSousOperation());
                                 analyseResultDto.setCategorieMaintenance(periodiciteDto.getCategorieMaintenance());
-                                if(periodiciteDtoListByCategorie.contains(periodiciteDto)){
-                                    analyseResultDto.setUop(getUOP(requeteDto, periodiciteDto));
+                                if(periodiciteDtoListByCategorie
+                                        .stream()
+                                        .filter(periode -> periode.getLibelle().equals(periodiciteDto.getLibelle()) &&
+                                                periode.getSousOperation().equals(periodiciteDto.getSousOperation()))
+                                        .findFirst()
+                                        .isPresent()){
+                                    Float uop = getUOP(requeteDto, periodiciteDto);
+                                    analyseResultDto.setUop(uop.isInfinite() ? 0f : uop);
                                 }else{
                                     analyseResultDto.setUop(0f);
                                 }
@@ -257,7 +270,7 @@ public class RequeteServiceImpl implements RequeteService {
     @Transactional
     public Catenaire getCatenaireById(Long id) {
         Catenaire catenaire = catenaireRepository.findById(id).orElseThrow();
-        catenaire.getPeriodicites().size(); // Initialize the collection
+        catenaire.getPeriodicites().size();
         return catenaire;
     }
 }
