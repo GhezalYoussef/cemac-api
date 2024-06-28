@@ -152,7 +152,7 @@ public class ExcelServiceImpl implements ExcelService {
                         valeur = "";
                     } else {
                         // Lire la valeur de la cellule
-                        valeur = PeriodiciteExcelDataReader.lireValeurCellule(cell);
+                        valeur = FamilleCatenaireExcelDataReader.lireValeurCellule(cell);
                     }
                     donneesDeLaLigne.add(valeur);
                 }
