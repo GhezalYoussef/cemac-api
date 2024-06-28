@@ -51,6 +51,11 @@ public class FamilleCatenaireServiceImpl implements FamilleCatenaireService {
     }
 
     @Override
+    public List<FamilleCatenaireDto> updateAll(List<FamilleCatenaireDto> familleCatenaireDtoList) throws ResourceNotFoundException {
+        return null;
+    }
+
+    @Override
     public void delete(Long familleCatenaireId) throws ResourceNotFoundException {
 
         log.info("Supprimer la famille catenaire: [" + familleCatenaireId + "]");

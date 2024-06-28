@@ -11,5 +11,7 @@ public interface CatenaireService {
 
     CatenaireDto update(CatenaireDto catenaireDto) throws ResourceNotFoundException;
 
+    List<CatenaireDto> updateAll(List<CatenaireDto> catenaireDtoList) throws ResourceNotFoundException;
+
     void delete(Long catenaireId) throws ResourceNotFoundException;
 }

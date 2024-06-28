@@ -58,6 +58,11 @@ public class CatenaireServiceImpl implements CatenaireService {
     }
 
     @Override
+    public List<CatenaireDto> updateAll(List<CatenaireDto> catenaireDtoList) throws ResourceNotFoundException {
+        return null;
+    }
+
+    @Override
     public void delete(Long catenaireId) throws ResourceNotFoundException {
 
         log.info("Supprimer la catenaire :[" + catenaireId + "]");
