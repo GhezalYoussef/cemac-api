@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import sncf.reseau.cemac.dto.ExcelCatenaireDto;
+import sncf.reseau.cemac.dto.ExcelFamilleCatenaireDto;
 import sncf.reseau.cemac.dto.ExcelPeriodiciteDto;
 import sncf.reseau.cemac.service.ExcelService;
 
@@ -23,16 +25,37 @@ public class ExcelResource {
         this.excelService = excelService;
     }
 
-    @PostMapping(value = "/import-donnees")
-    public ResponseEntity<?> importDonneesSaisie(@RequestBody byte[] data) {
+    @PostMapping(value = "/import-donnees/periodicite")
+    public ResponseEntity<?> importDonneesSaisiePeriode(@RequestBody byte[] data) {
         try{
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-            ExcelPeriodiciteDto excelData = excelService.importDonnees(inputStream);
+            ExcelPeriodiciteDto excelData = excelService.importDonneesPeriodicite(inputStream);
             return ResponseEntity.ok(excelData);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors du traitement des données Excel: " + e.getMessage());
         }
+    }
 
+    @PostMapping(value = "/import-donnees/catenaire")
+    public ResponseEntity<?> importDonneesSaisieCatenaire(@RequestBody byte[] data) {
+        try{
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            ExcelCatenaireDto excelData = excelService.importDonneesCatenaire(inputStream);
+            return ResponseEntity.ok(excelData);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors du traitement des données Excel: " + e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/import-donnees/famille-catenaire")
+    public ResponseEntity<?> importDonneesSaisieFamilleCatenaire(@RequestBody byte[] data) {
+        try{
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            ExcelFamilleCatenaireDto excelData = excelService.importDonneesFamilleCatenaire(inputStream);
+            return ResponseEntity.ok(excelData);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors du traitement des données Excel: " + e.getMessage());
+        }
     }
 
 }

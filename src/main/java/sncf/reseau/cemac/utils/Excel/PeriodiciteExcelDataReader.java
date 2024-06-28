@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ExcelDataReader {
+public class PeriodiciteExcelDataReader {
 
     private final static int ID_PERIODE = 0;
     private final static int CATEGORIE = 1;

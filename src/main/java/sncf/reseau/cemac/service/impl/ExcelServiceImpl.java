@@ -5,11 +5,15 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sncf.reseau.cemac.dto.ExcelCatenaireDto;
+import sncf.reseau.cemac.dto.ExcelFamilleCatenaireDto;
 import sncf.reseau.cemac.dto.ExcelPeriodiciteDto;
 import sncf.reseau.cemac.mapper.CatenaireDtoMapper;
 import sncf.reseau.cemac.repository.CatenaireRepository;
 import sncf.reseau.cemac.service.ExcelService;
-import sncf.reseau.cemac.utils.Excel.ExcelDataReader;
+import sncf.reseau.cemac.utils.Excel.CatenaireExcelDataReader;
+import sncf.reseau.cemac.utils.Excel.FamilleCatenaireExcelDataReader;
+import sncf.reseau.cemac.utils.Excel.PeriodiciteExcelDataReader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +38,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
-    public ExcelPeriodiciteDto importDonnees(InputStream fis) {
+    public ExcelPeriodiciteDto importDonneesPeriodicite(InputStream fis) {
         log.info("Charger la liste des données saisies");
         List<List<Object>> donnees = new ArrayList<>();
         try (Workbook workbook = new XSSFWorkbook(fis)) {
@@ -60,7 +64,7 @@ public class ExcelServiceImpl implements ExcelService {
                         valeur = "";
                     } else {
                         // Lire la valeur de la cellule
-                        valeur = ExcelDataReader.lireValeurCellule(cell);
+                        valeur = PeriodiciteExcelDataReader.lireValeurCellule(cell);
                     }
                     donneesDeLaLigne.add(valeur);
                 }
@@ -71,7 +75,7 @@ public class ExcelServiceImpl implements ExcelService {
             e.printStackTrace();
         }
 
-        return ExcelDataReader.getListPeriodicite(
+        return PeriodiciteExcelDataReader.getListPeriodicite(
                 donnees,
                 catenaireRepository.findAll()
                     .stream()
@@ -80,5 +84,86 @@ public class ExcelServiceImpl implements ExcelService {
         );
     }
 
+    @Override
+    public ExcelCatenaireDto importDonneesCatenaire(InputStream fis) {
+        log.info("Charger la liste des données saisies");
+        List<List<Object>> donnees = new ArrayList<>();
+        try (Workbook workbook = new XSSFWorkbook(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            boolean premiereLigne = true;
+
+            for (Row row : sheet) {
+                if (premiereLigne) {
+                    // Ignorer la première ligne (en-têtes)
+                    premiereLigne = false;
+                    continue;
+                }
+
+                List<Object> donneesDeLaLigne = new ArrayList<>();
+
+                // Itérer jusqu'au dernier indice de colonne possible dans la ligne
+                int lastColumn = Math.max(row.getLastCellNum(), SOME_FIXED_NUMBER); // SOME_FIXED_NUMBER devrait être le nombre de colonnes attendu
+                for (int cn = 0; cn < lastColumn; cn++) {
+                    Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    Object valeur;
+                    if (cell.getCellType() == CellType.BLANK) {
+                        // Traitement des cellules vides comme chaîne vide
+                        valeur = "";
+                    } else {
+                        // Lire la valeur de la cellule
+                        valeur = CatenaireExcelDataReader.lireValeurCellule(cell);
+                    }
+                    donneesDeLaLigne.add(valeur);
+                }
+
+                donnees.add(donneesDeLaLigne);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return CatenaireExcelDataReader.getListCatenaire(donnees);
+    }
+
+    @Override
+    public ExcelFamilleCatenaireDto importDonneesFamilleCatenaire(InputStream fis) {
+        log.info("Charger la liste des données saisies");
+        List<List<Object>> donnees = new ArrayList<>();
+        try (Workbook workbook = new XSSFWorkbook(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            boolean premiereLigne = true;
+
+            for (Row row : sheet) {
+                if (premiereLigne) {
+                    // Ignorer la première ligne (en-têtes)
+                    premiereLigne = false;
+                    continue;
+                }
+
+                List<Object> donneesDeLaLigne = new ArrayList<>();
+
+                // Itérer jusqu'au dernier indice de colonne possible dans la ligne
+                int lastColumn = Math.max(row.getLastCellNum(), SOME_FIXED_NUMBER); // SOME_FIXED_NUMBER devrait être le nombre de colonnes attendu
+                for (int cn = 0; cn < lastColumn; cn++) {
+                    Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    Object valeur;
+                    if (cell.getCellType() == CellType.BLANK) {
+                        // Traitement des cellules vides comme chaîne vide
+                        valeur = "";
+                    } else {
+                        // Lire la valeur de la cellule
+                        valeur = PeriodiciteExcelDataReader.lireValeurCellule(cell);
+                    }
+                    donneesDeLaLigne.add(valeur);
+                }
+
+                donnees.add(donneesDeLaLigne);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return FamilleCatenaireExcelDataReader.getListFamilleCatenaire(donnees);
+    }
 
 }
